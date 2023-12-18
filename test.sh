@@ -1,6 +1,7 @@
 #!/bin/bash
 python3 app.py &
 APP_PID=$!
+python3 test.py
 
 # Run Postman collections with Newman
 newman run forum_multiple_posts.postman_collection.json -e env.json
