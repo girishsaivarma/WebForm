@@ -121,7 +121,7 @@ def delete_post(post_id, post_key):
             return jsonify(error='Invalid post ID or key.'), 403
 
         deleted_post = post_storage.pop(post_id)
-        return jsonify({k: v for k, v in deleted_post.items() if k != 'key'}), 200
+    return jsonify({k: v for k, v in deleted_post.items() if k != 'key'}), 200
 
 # Endpoint to get posts within a certain date range
 @app.route('/posts', methods=['GET'])
