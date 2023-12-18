@@ -121,24 +121,8 @@ def delete_post(post_id, post_key):
             return jsonify(error='Invalid post ID or key.'), 403
 
         deleted_post = post_storage.pop(post_id)
-    return jsonify({k: v for k, v in deleted_post.items() if k != 'key'}), 200
+        return jsonify({k: v for k, v in deleted_post.items() if k != 'key'}), 200
 
-# Endpoint to get posts within a certain date range
-@app.route('/posts', methods=['GET'])
-def get_posts_within_range():
-    # Your implementation here
-
-# Endpoint to get posts by a specific user
-@app.route('/posts/user/<username>', methods=['GET'])
-def get_posts_by_username(username):
-    # Your implementation here
-
-# Endpoint for fulltext search in posts
-@app.route('/posts/search', methods=['GET'])
-def search_in_posts():
-    # Your implementation here
-
-# Additional code and endpoints as needed
 
 if __name__ == '__main__':
     app.run(debug=True)
