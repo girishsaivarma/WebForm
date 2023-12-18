@@ -39,7 +39,6 @@ def posts_date_range():
 @app.route('/register', methods=['POST'])
 def register_user():
     with data_access_lock:
-        # Validate request format
         if not request.is_json:
             return jsonify(error='Invalid JSON format.'), 400
 
@@ -52,11 +51,9 @@ def register_user():
         if not isinstance(user_name, str):
             return jsonify(error='Username is required and must be a string.'), 400
 
-        # Check for existing username
         if any(user['username'] == user_name for user in user_storage.values()):
             return jsonify(error='Username already in use.'), 400
 
-        # Create new user
         global user_counter
         user_counter += 1
         new_user_key = generate_unique_key()
