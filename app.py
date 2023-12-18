@@ -17,6 +17,24 @@ data_access_lock = threading.Lock()
 def generate_unique_key():
     return secrets.token_urlsafe(16)
 
+@app.route('/posts/search', methods=['GET'])
+def search_posts():
+    query = request.args.get('query', '')
+    with data_access_lock:
+        matched_posts = [post for post in post_storage.values() if re.search(query, post['msg'], re.IGNORECASE)]
+        return jsonify(matched_posts)
+
+# Date- and Time-Based Range Queries
+@app.route('/posts/date-range', methods=['GET'])
+def posts_date_range():
+    start = request.args.get('start')
+    end = request.args.get('end')
+    with data_access_lock:
+        filtered_posts = [post for post in post_storage.values() if start <= post['timestamp'] <= end]
+        return jsonify(filtered_posts)
+
+
+
 # Endpoint to create a new user
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -77,7 +95,6 @@ def update_user(user_id):
         user_storage[user_id].update({k: v for k, v in update_data.items() if k in ['name', 'username']})
         return jsonify(message='User information updated successfully.'), 200
 
-# Endpoint to create a new post
 @app.route('/post', methods=['POST'])
 def create_post():
     with data_access_lock:
@@ -91,7 +108,22 @@ def create_post():
         post_counter += 1
         new_post_key = generate_unique_key()
 
-        post_details = {'id': post_counter, 'msg': post_data['msg'], 'key': new_post_key, 'timestamp': datetime.utcnow().isoformat()}
+        post_details = {
+            'id': post_counter, 
+            'msg': post_data['msg'], 
+            'key': new_post_key, 
+            'timestamp': datetime.utcnow().isoformat()
+        }
+
+        # Handling file upload (if present)
+        file_data = post_data.get('file')
+        if file_data:
+            try:
+                # Optionally decode and store the file, or just store the base64 string
+                post_details['file'] = file_data
+            except Exception as e:
+                return jsonify(error=str(e)), 400
+
         if 'user_id' in post_data and 'user_key' in post_data:
             user_id = post_data['user_id']
             if user_storage.get(user_id, {}).get('key') == post_data['user_key']:
@@ -101,6 +133,7 @@ def create_post():
 
         post_storage[post_counter] = post_details
         return jsonify(post_details), 200
+
 
 # Endpoint to get a specific post by ID
 @app.route('/post/<int:post_id>', methods=['GET'])
